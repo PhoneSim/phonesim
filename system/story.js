@@ -1,0 +1,1 @@
+const story = "### start\r\n## mc\r\nHi, this is just a test\r\n\r\n## anime\r\nHey, just a test ok?\r\n\r\n## group\r\n&Marcus Hey bro, this is a test ok?"
