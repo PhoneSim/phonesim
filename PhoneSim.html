@@ -311,6 +311,7 @@
                     <span @click="importSave">Load from Disk</span>
                 </div>
 
+                <p class="dev-notification">The game features an automatic saving system and will always resume from where you left off</p>
                 <p class="dev-notification">Tip: You can change the save name when creating a new one or by clicking on an existing one</p>
                 <p class="dev-notification">In future you will be able to save at any time using the "tab" button</p>
             </div>
@@ -437,11 +438,6 @@
                                 <span>Save/Load System</span> 
                             </div>
 
-                            <!-- <div class="option" @click="setCurrentOption('Save')">
-                                <img src="./system/icons/others/chedit.png">
-                                <span>Characters Editor</span> 
-                            </div> -->
-
                             <div class="option" @click="setModalResetGame">
                                 <img src="./system/icons/others/reset.png">
                                 <span>Reset (start a new game)</span> 
@@ -474,7 +470,10 @@
                 "likedPosts",
                 "answerCall",
                 "endEvent",
-                "nextStory"
+                "nextStory",
+                "storyNodes",
+                "storyNodePath",
+                "storyNodeIndex",
             ],
             emits: [
                 "goBack",
@@ -589,7 +588,10 @@
                 "likedPosts",
                 "answerCall",
                 "endEvent",
-                "nextStory"
+                "nextStory",
+                "storyNodes",
+                "storyNodePath",
+                "storyNodeIndex",
             ],
             emits: [
                 "navigateTo",
@@ -672,7 +674,10 @@
                 "storyNodeElement",
                 "answerCall",
                 "endEvent",
-                "nextStory"
+                "nextStory",
+                "storyNodes",
+                "storyNodePath",
+                "storyNodeIndex",
             ],
             emits: [
                 "navigateTo",
@@ -754,7 +759,10 @@
                 "likedPosts",
                 "answerCall",
                 "endEvent",
-                "nextStory"
+                "nextStory",
+                "storyNodes",
+                "storyNodePath",
+                "storyNodeIndex",
             ],
             emits: [
                 "goBack",
@@ -882,7 +890,10 @@
                 "likedPosts",
                 "answerCall",
                 "endEvent",
-                "nextStory"
+                "nextStory",
+                "storyNodes",
+                "storyNodePath",
+                "storyNodeIndex",
             ],
             emits: [
                 "navigateTo",
@@ -924,7 +935,7 @@
                         </div>
                         <div class="nav-container chat-opened-nav-itens">
                             <div class="btn"><img src="./system/icons/others/video-call.png"></div>
-                            <div class="btn"><img src="./system/icons/others/call.png"></div>
+                            <div @click="alert('Go to (Home > Phone) to make a call')" class="btn"><img src="./system/icons/others/call.png"></div>
                             <div class="btn"><img src="./system/icons/others/menu.png"></div>
                         </div>
                     </div>
@@ -977,7 +988,10 @@
                 "likedPosts",
                 "answerCall",
                 "endEvent",
-                "nextStory"
+                "nextStory",
+                "storyNodes",
+                "storyNodePath",
+                "storyNodeIndex",
             ],
             emits: [
                 "navigateTo",
@@ -1035,6 +1049,9 @@
                         })
                     }
                 },
+                alert(message) {
+                    window.alert(message)
+                }
             },
             components: {
                 "Message": message,
@@ -1065,7 +1082,7 @@
                                     <span>{{char.name}}</span>
                                     <p>{{getLastMessage(char.name)}}</p>
                                 </div>
-                                <span class="pendent" v-if="!nextStory && char === characters[currentCharStory] && currentEnvStory === 'chat'"/>
+                                <span class="pendent" v-if="!endVersion && !nextStory&& char === characters[currentCharStory] && currentEnvStory === 'chat'"/>
                                 <img class="pendent-call" src="./system/icons/others/call-pendent.png" v-if="!nextStory && char === characters[currentCharStory] && currentEnvStory === 'call'" />
                             </div>
                         </template>
@@ -1090,8 +1107,19 @@
                 "likedPosts",
                 "answerCall",
                 "endEvent",
-                "nextStory"
+                "nextStory",
+                "storyNodes",
+                "storyNodePath",
+                "storyNodeIndex",
             ],
+            data() {
+                return {
+                    endVersion: false
+                }
+            },
+            mounted() {
+                this.endVersion = this.storyNodes[this.storyNodePath].length === this.storyNodeIndex
+            },
             emits: [
                 "navigateTo",
                 "goBack",
@@ -1210,7 +1238,10 @@
                 "likedPosts",
                 "answerCall",
                 "endEvent",
-                "nextStory"
+                "nextStory",
+                "storyNodes",
+                "storyNodePath",
+                "storyNodeIndex",
             ],
             emits: [
                 "goBack",
@@ -1267,6 +1298,9 @@
                             :answerCall="answerCall"
                             :endEvent="endEvent"
                             :nextStory="nextStory"
+                            :storyNodeIndex="storyNodeIndex" 
+                            :storyNodes="storyNodes" 
+                            :storyNodePath="storyNodePath"
                             @advanceStory="advanceStory" 
                             @setDialogueBox="setDialogueBox" 
                             @setShowAlarm="setShowAlarm" 
@@ -1335,7 +1369,8 @@
                     answerCall: false,
                     endEvent: false,
                     soundSrc: null,
-                    gambOne: false
+                    gambOne: false,
+                    posts: []
                 }
             },
             mounted() {
@@ -1376,19 +1411,21 @@
                                     this.conditionNode(condition, path);
                                 }
                             },
-                            { regex: /^!a$/, func: () => this.callAnswer() },
+                            { regex: /^!answer$/, func: () => this.callAnswer() },
                             { regex: /^!next$/, func: (m) => this.nextNode() },
                             { regex: /&(.+?) (.+)$/, func: (m) => this.groupMessage(m[1], m[2]) },
                             { regex: /^@ (.+)$/, func: (m) => this.messageNode("mc", m[1]) },
                             { regex: /^([^@!#*].*)$/, func: (m) => this.messageNode("", m[0]) },
-                            { regex: /^!i ([^\s]+) (.+)$/, func: (m) => this.imageMessageNode("", m[1], m[2]) },
-                            { regex: /^@ !i ([^\s]+) (.+)$/, func: (m) => this.imageMessageNode("mc", m[1], m[2]) },
-                            { regex: /^!i ([^\s]+)$/, func: (m) => this.imageMessageNode("", m[1], "") },
-                            { regex: /^!v ([^\s]+) (.+)$/, func: (m) => this.videoMessageNode("", m[1], m[2]) },
-                            { regex: /^@ !v ([^\s]+) (.+)$/, func: (m) => this.videoMessageNode("mc", m[1], m[2]) },
-                            { regex: /^!v ([^\s]+)$/, func: (m) => this.videoMessageNode("", m[1], "") },
+                            { regex: /^!image ([^\s]+) (.+)$/, func: (m) => this.imageMessageNode("", m[1], m[2]) },
+                            { regex: /^@image ([^\s]+) (.+)$/, func: (m) => this.imageMessageNode("mc", m[1], m[2]) },
+                            { regex: /^@image ([^\s]+)$/, func: (m) => this.imageMessageNode("mc", m[1], "") },
+                            { regex: /^!image ([^\s]+)$/, func: (m) => this.imageMessageNode("", m[1], "") },
+                            { regex: /^!video ([^\s]+) (.+)$/, func: (m) => this.videoMessageNode("", m[1], m[2]) },
+                            { regex: /^@video ([^\s]+) (.+)$/, func: (m) => this.videoMessageNode("mc", m[1], m[2]) },
+                            { regex: /^@video ([^\s]+)$/, func: (m) => this.videoMessageNode("mc", m[1], "") },
+                            { regex: /^!video ([^\s]+)$/, func: (m) => this.videoMessageNode("", m[1], "") },
                             {
-                                regex: /^!p ([^\s]+) ([^\s]+) \*\*(.+?)\*\* (.+)$/, func: (m) => {
+                                regex: /^!post ([^\s]+) ([^\s]+) \*\*(.+?)\*\* (.+)$/, func: (m) => {
                                     const comments = [];
                                     const commentRegex = /'([^']*)' "([^"]*)"/g;
                                     let match;
@@ -1398,9 +1435,9 @@
                                     this.newPostInstaNode(m[2], m[1], m[3], comments);
                                 }
                             },
-                            { regex: /^!n ([^\s]+) ([^\s]+)$/, func: (m) => this.newPhotoPerfilNode(m[2], m[1]) },
+                            { regex: /^!perfil ([^\s]+)$/, func: (m) => this.newPhotoPerfilNode(m[1]) },
                             {
-                                regex: /^!c (.+)$/, func: (m) => {
+                                regex: /^!choice (.+)$/, func: (m) => {
                                     const choices = [];
                                     const choiceRegex = /'([^']*)' "([^"]*)"/g;
                                     let match;
@@ -1412,23 +1449,27 @@
                             },
                             { regex: /^## (.+)$/, func: (m) => this.setEnvNode("chat", m[1]) },
                             { regex: /^# (.+)$/, func: (m) => this.setEnvNode("call", m[1]) },
-                            { regex: /^\*\*(.+?)\*\*$/, func: (m) => this.newDialNode("mc", m[1], true) },
+                            {
+                                regex: /^\*\*(.+?)\*\*$/, func: (m) => {
+                                    const match = m[1].match(/^(.*?)-(.*?)$/);
+                                    if (match && match[1] != "sys") this.newDialNode(match[1], match[2], true)
+                                    else if(match && match[1] == "sys") this.newDialNode(match[1], match[2], false)
+                                    else this.newDialNode("mc", m[1], true)
+                                }
+                            },
                             {
                                 regex: /^\*(.+?)\*$/, func: (m) => {
                                     const match = m[1].match(/^(.*?)-(.*?)$/);
-                                    if (match) {
-                                        this.newDialNode(match[1], match[2], false);
-                                    } else {
-                                        this.newDialNode("mc", m[1], false);
-                                    }
+                                    if (match) this.newDialNode(match[1], match[2], false);
+                                    else this.newDialNode("mc", m[1], false);
                                 }
                             },
                             { regex: /^\*sys-(.+?)\*$/, func: (m) => this.newDialNode("sys", m[1], false) },
-                            { regex: /^!j (.+)$/, func: (m) => this.jumpNode(m[1]) },
-                            { regex: /^!s ([^\s]+)$/, func: (m) => this.newAudioNode(m[1]) },
-                            { regex: /^!end$/, func: () => this.endCurrentEventNode() },
+                            { regex: /^!jump (.+)$/, func: (m) => this.jumpNode(m[1]) },
+                            { regex: /^!audio ([^\s]+)$/, func: (m) => this.newAudioNode(m[1]) },
+                            { regex: /^!endCall$/, func: () => this.endCurrentEventNode() },
                             {
-                                regex: /^!ad (.+)$/, func: (m) => {
+                                regex: /^!toggleChar (.+)$/, func: (m) => {
                                     const parts = m[1].split(' - ');
                                     const active = parts[0].split(' ').map(p => p.trim());
                                     const disable = parts[1] ? parts[1].split(' ').map(p => p.trim()) : [];
@@ -1508,13 +1549,15 @@
                     this.messageHistory[this.currentCharStory] = localMessageHistoryChar
                 },
                 imageMessageNode(prefix, src, text) {
+                    const prefixSrc = `./content/images/${src}`
                     let localMessageHistoryChar = this.messageHistory[this.currentCharStory] || []
-                    localMessageHistoryChar = [...localMessageHistoryChar, { type: "image", dest: prefix ? "s" : "r", text: this.mentionReader(text), src }]
+                    localMessageHistoryChar = [...localMessageHistoryChar, { type: "image", dest: prefix ? "s" : "r", text: this.mentionReader(text), src: prefixSrc }]
                     this.messageHistory[this.currentCharStory] = localMessageHistoryChar
                 },
                 videoMessageNode(prefix, src, text) {
+                    const prefixSrc = `./content/videos/${src}`
                     let localMessageHistoryChar = this.messageHistory[this.currentCharStory] || []
-                    localMessageHistoryChar = [...localMessageHistoryChar, { type: "video", dest: prefix ? "s" : "r", text: this.mentionReader(text), src }]
+                    localMessageHistoryChar = [...localMessageHistoryChar, { type: "video", dest: prefix ? "s" : "r", text: this.mentionReader(text), src: prefixSrc }]
                     this.messageHistory[this.currentCharStory] = localMessageHistoryChar
                 },
                 groupMessage(prefix, text) {
@@ -1526,16 +1569,17 @@
                     this.messageHistory[this.currentCharStory] = localMessageHistoryChar
                 },
                 newPostInstaNode(user, src, reaction, comments) {
+                    const prefixSrc = `./content/images/${src}`
                     comments.forEach((comment, index) => {
                         comments[index][1] = this.mentionReader(comment[1])
                     })
 
-                    const newId = this.posts[0].id + 1
+                    const newId = this.posts[0]?.id ? this.posts[0].id + 1 : 1
                     this.posts.unshift({
                         id: newId,
                         character: user,
                         liked: false,
-                        src,
+                        src: prefixSrc,
                         reaction: this.mentionReader(reaction),
                         comments
                     })
@@ -1544,8 +1588,9 @@
                     this.storyNodeIndex = this.storyNodeIndex + 1
                     this.storyNodeRender()
                 },
-                newPhotoPerfilNode(charKey, src) {
-                    this.characters[charKey].perfil = src
+                newPhotoPerfilNode(src) {
+                    const prefixSrc = `./content/images/${src}`
+                    this.characters[this.currentCharStory].perfil = prefixSrc
                     this.storyNodeIndex = this.storyNodeIndex + 1
                     this.storyNodeRender()
                 },
@@ -1588,7 +1633,7 @@
                     if (env === "call") {
                         this.answerCall = false
                         this.endEvent = false
-                        const regex = /^!a$/;
+                        const regex = /^!answer$/;
 
                         if (regex.test(nextLine)) {
                             this.storyNodeIndex = this.storyNodeIndex + 1
@@ -1610,7 +1655,8 @@
                     }
                 },
                 newAudioNode(src) {
-                    this.soundSrc = src
+                    const prefixSrc = `./content/audios/${src}`
+                    this.soundSrc = prefixSrc
                     this.storyNodeIndex = this.storyNodeIndex + 1
                     this.storyNodeRender()
                 },
@@ -1638,7 +1684,7 @@
                     this.storyNodeRender()
                 },
                 mentionReader(text) {
-                    const regex = /@(\w+)/g;
+                    const regex = /@(?!video|image)(\w+)/g;
                     const matches = text.match(regex);
                     if (matches) {
                         matches.forEach(match => {
@@ -1722,7 +1768,7 @@
 
                     const callRegex = /^# (.+)$/;
                     const chatRegex = /^## (.+)$/;
-                    const jumpRegex = /^!j (.+)$/
+                    const jumpRegex = /^!jump (.+)$/
                     const nextLine = this.storyNodes[this.storyNodePath][this.storyNodeIndex]
 
                     if ((callRegex.test(nextLine) || chatRegex.test(nextLine) || jumpRegex.test(nextLine)) && !this.loading) {
@@ -1759,7 +1805,7 @@
                     return (celsius * 9 / 5) + 32;
                 },
                 addNotification(notification) {
-                    const regex = /^!p /;
+                    const regex = /^!post /;
 
                     if (!this.loading && !this.notifications.includes(notification)) {
                         if (notification.text && regex.test(notification.text)) return

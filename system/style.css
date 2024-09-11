@@ -567,7 +567,7 @@ body {
     height: auto;
     border-radius: 5px;
     cursor: pointer;
-    min-height: 154.219px;
+    min-height: 161.39px;
 }
 
 /*==================== dialogue-box ================== */
@@ -726,7 +726,7 @@ body {
     background-color: #FFF;
     width: 96%;
     height: 100%;
-    border-radius: 10%;
+    border-radius: 60px;
 }
 
 .phone-app .nav {

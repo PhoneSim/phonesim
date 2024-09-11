@@ -1,10 +1,17 @@
 const chars = {
-    mc: {
-        name: "MC",
+    dev: {
+        name: "Dev",
         saved: true,
         perfil: "./content/images/a.jpg",
         textColor: "#FFF",
-        dev: true //todo: Remove
+        dev: true
+    },
+
+    mc: {
+        name: "MC",
+        saved: false,
+        perfil: "./content/images/a.jpg",
+        textColor: "#FFF",
     },
 
     anime: {
