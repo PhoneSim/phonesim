@@ -1415,7 +1415,6 @@
                             { regex: /^!next$/, func: (m) => this.nextNode() },
                             { regex: /&(.+?) (.+)$/, func: (m) => this.groupMessage(m[1], m[2]) },
                             { regex: /^@ (.+)$/, func: (m) => this.messageNode("mc", m[1]) },
-                            { regex: /^([^@!#*].*)$/, func: (m) => this.messageNode("", m[0]) },
                             { regex: /^!image ([^\s]+) (.+)$/, func: (m) => this.imageMessageNode("", m[1], m[2]) },
                             { regex: /^@image ([^\s]+) (.+)$/, func: (m) => this.imageMessageNode("mc", m[1], m[2]) },
                             { regex: /^@image ([^\s]+)$/, func: (m) => this.imageMessageNode("mc", m[1], "") },
@@ -1424,8 +1423,9 @@
                             { regex: /^@video ([^\s]+) (.+)$/, func: (m) => this.videoMessageNode("mc", m[1], m[2]) },
                             { regex: /^@video ([^\s]+)$/, func: (m) => this.videoMessageNode("mc", m[1], "") },
                             { regex: /^!video ([^\s]+)$/, func: (m) => this.videoMessageNode("", m[1], "") },
+                            { regex: /^([^!#*].*)$/, func: (m) => this.messageNode("", m[0]) },
                             {
-                                regex: /^!post ([^\s]+) ([^\s]+) \*\*(.+?)\*\* (.+)$/, func: (m) => {
+                                regex: /^!post ([^\s]+) ([^\s]+) \*\*(.*?)\*\* (.+)$/, func: (m) => {
                                     const comments = [];
                                     const commentRegex = /'([^']*)' "([^"]*)"/g;
                                     let match;
@@ -1453,7 +1453,7 @@
                                 regex: /^\*\*(.+?)\*\*$/, func: (m) => {
                                     const match = m[1].match(/^(.*?)-(.*?)$/);
                                     if (match && match[1] != "sys") this.newDialNode(match[1], match[2], true)
-                                    else if(match && match[1] == "sys") this.newDialNode(match[1], match[2], false)
+                                    else if (match && match[1] == "sys") this.newDialNode(match[1], match[2], false)
                                     else this.newDialNode("mc", m[1], true)
                                 }
                             },
@@ -1570,21 +1570,23 @@
                 },
                 newPostInstaNode(user, src, reaction, comments) {
                     const prefixSrc = `./content/images/${src}`
+                    const loweUser = user?.toLowerCase()
                     comments.forEach((comment, index) => {
+                        comments[index][0] = this.mentionReader(comment[0])
                         comments[index][1] = this.mentionReader(comment[1])
                     })
 
                     const newId = this.posts[0]?.id ? this.posts[0].id + 1 : 1
                     this.posts.unshift({
                         id: newId,
-                        character: user,
+                        character: loweUser,
                         liked: false,
                         src: prefixSrc,
                         reaction: this.mentionReader(reaction),
                         comments
                     })
 
-                    this.addNotification({ type: "i", char: this.characters[user] })
+                    this.addNotification({ type: "i", char: this.characters[loweUser] })
                     this.storyNodeIndex = this.storyNodeIndex + 1
                     this.storyNodeRender()
                 },
