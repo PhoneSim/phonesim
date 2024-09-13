@@ -546,9 +546,11 @@
                             </div>
                         </div>
 
-                        <div class="posts">
+                        <div class="posts" v-show="posts.length">
                             <Post v-for="(post, index) in posts" :postIndex="index" :key="index" :likedPosts="likedPosts" :characters="characters" :post="post" @likePostInsta="likePostInsta"/>
                         </div>
+
+                        <div class="no-posts-message" v-show="!posts.length">Welcome. When your friends make new posts, you'll see them here.</div>
 
                         <div class="footer">
                             <div class="btn">
