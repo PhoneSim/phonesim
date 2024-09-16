@@ -474,6 +474,7 @@
                 "storyNodes",
                 "storyNodePath",
                 "storyNodeIndex",
+                "waitAnotherCall"
             ],
             emits: [
                 "goBack",
@@ -483,7 +484,8 @@
                 "editCharacter",
                 "advanceStory",
                 "likePostInsta",
-                "storyNodeRender"
+                "storyNodeRender",
+                "setWaitAnotherCall"
             ],
             data() {
                 return {
@@ -594,6 +596,7 @@
                 "storyNodes",
                 "storyNodePath",
                 "storyNodeIndex",
+                "waitAnotherCall"
             ],
             emits: [
                 "navigateTo",
@@ -604,7 +607,8 @@
                 "advanceStory",
                 "likePostInsta",
                 "storyNodeRender",
-                "storyNodeElement"
+                "storyNodeElement",
+                "setWaitAnotherCall"
             ],
             methods: {
                 navigateTo(app) {
@@ -680,6 +684,7 @@
                 "storyNodes",
                 "storyNodePath",
                 "storyNodeIndex",
+                "waitAnotherCall"
             ],
             emits: [
                 "navigateTo",
@@ -689,7 +694,8 @@
                 "advanceStory",
                 "editCharacter",
                 "storyNodeRender",
-                "likedPosts"
+                "likedPosts",
+                "setWaitAnotherCall"
             ],
             methods: {
                 edit() {
@@ -765,6 +771,7 @@
                 "storyNodes",
                 "storyNodePath",
                 "storyNodeIndex",
+                "waitAnotherCall"
             ],
             emits: [
                 "goBack",
@@ -773,14 +780,15 @@
                 "setDialogueBox",
                 "advanceStory",
                 "editCharacter",
-                "storyNodeRender"
+                "storyNodeRender",
+                "setWaitAnotherCall"
             ],
             created() {
                 document.addEventListener('keydown', this.handleKeyDown)
             },
             mounted() {
                 this.charKey = Object.keys(this.characters).find(key => this.characters[key]?.name === this.appProps?.name)
-                this.hasEvent = this.currentEnvStory === "call" && this.currentCharStory === this.charKey && true
+                this.hasEvent = this.currentEnvStory === "call" && this.currentCharStory === this.charKey
 
                 setTimeout(() => {
                     if (!this.hasEvent) {
@@ -791,7 +799,8 @@
                         if (this.answerCall) this.answered = this.answerCall
                         else this.status = "Missed call"
                         this.startTimer();
-                        this.advance();
+                        this.$emit("setWaitAnotherCall", false)
+                        this.advance(true);
                     }
                 }, 7000)
             },
@@ -827,8 +836,8 @@
                         this.advance();
                     }
                 },
-                advance() {
-                    if (this.hasEvent && this.canPrecide) {
+                advance(force = false) {
+                    if (this.hasEvent && this.canPrecide && (force || !this.waitAnotherCall)) {
                         this.$emit("advanceStory", "call", this.charKey)
                     }
                 }
@@ -896,6 +905,7 @@
                 "storyNodes",
                 "storyNodePath",
                 "storyNodeIndex",
+                "waitAnotherCall"
             ],
             emits: [
                 "navigateTo",
@@ -906,7 +916,7 @@
                 "editCharacter",
                 "likePostInsta",
                 "storyNodeRender",
-
+                "setWaitAnotherCall"
             ],
             methods: {
                 editChar(event, charName) {
@@ -994,6 +1004,7 @@
                 "storyNodes",
                 "storyNodePath",
                 "storyNodeIndex",
+                "waitAnotherCall"
             ],
             emits: [
                 "navigateTo",
@@ -1003,7 +1014,8 @@
                 "editCharacter",
                 "setShowAlarm",
                 "likePostInsta",
-                "storyNodeRender"
+                "storyNodeRender",
+                "setWaitAnotherCall"
             ],
             data() {
                 return {
@@ -1113,6 +1125,7 @@
                 "storyNodes",
                 "storyNodePath",
                 "storyNodeIndex",
+                "waitAnotherCall"
             ],
             data() {
                 return {
@@ -1130,7 +1143,8 @@
                 "editCharacter",
                 "setShowAlarm",
                 "likePostInsta",
-                "storyNodeRender"
+                "storyNodeRender",
+                "setWaitAnotherCall"
             ],
             methods: {
                 navigateTo(app, props) {
@@ -1244,6 +1258,7 @@
                 "storyNodes",
                 "storyNodePath",
                 "storyNodeIndex",
+                "waitAnotherCall"
             ],
             emits: [
                 "goBack",
@@ -1254,6 +1269,7 @@
                 "advanceStory",
                 "likePostInsta",
                 "storyNodeRender",
+                "setWaitAnotherCall"
             ],
             methods: {
                 action(action) {
@@ -1303,6 +1319,8 @@
                             :storyNodeIndex="storyNodeIndex" 
                             :storyNodes="storyNodes" 
                             :storyNodePath="storyNodePath"
+                            :waitAnotherCall="waitAnotherCall"
+                            @setWaitAnotherCall="setWaitAnotherCall"
                             @advanceStory="advanceStory" 
                             @setDialogueBox="setDialogueBox" 
                             @setShowAlarm="setShowAlarm" 
@@ -1372,7 +1390,8 @@
                     endEvent: false,
                     soundSrc: null,
                     gambOne: false,
-                    posts: []
+                    posts: [],
+                    waitAnotherCall: false
                 }
             },
             mounted() {
@@ -1531,7 +1550,6 @@
                                 const fn = new Function('state', 'with(state) { return ' + condition + ' }');
                                 return fn(state);
                             } catch (e) {
-                                console.error('Error validating condition.');
                                 return false;
                             }
                         };
@@ -1635,8 +1653,11 @@
                     }
 
                     if (env === "call") {
+                        if (oldChar === this.currentCharStory && oldEnv === this.currentEnvStory) {
+                            this.setWaitAnotherCall(true)
+                        }
                         this.answerCall = false
-                        this.endEvent = false
+                        this.$nextTick(() => { this.endEvent = false })
                         const regex = /^!answer$/;
 
                         if (regex.test(nextLine)) {
@@ -1865,6 +1886,9 @@
                     this.characters[charKey] = newInfo
                     this.changedCharacters[charKey] = newInfo
                 },
+                setWaitAnotherCall(value) {
+                    this.waitAnotherCall = value
+                }
             },
             components: {
                 "Home": home,
