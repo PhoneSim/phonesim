@@ -1617,10 +1617,10 @@
                         this.charsToToggle = null
                     }
 
-                    if (env === "chat" && !this.loading) {
+                    if (env === "chat" && !this.loading) { //Notification condition
                         if (!this.gambOne && this.currentEnvStory === oldEnv && this.currentCharStory === oldChar) return;
-                        const regex = /^@ /;
-                        const regexTwo = /^\*/
+                        const regex = /^@ /; //MC message
+                        const regexTwo = /^\*/ //Dial
                         const groupMessageRegex = /&(.+?) (.+)$/
                         this.gambOne = false
 
@@ -1773,9 +1773,11 @@
                     const callRegex = /^# (.+)$/;
                     const chatRegex = /^## (.+)$/;
                     const jumpRegex = /^!jump (.+)$/
+                    const dialRegex = /^\*/
                     const nextLine = this.storyNodes[this.storyNodePath][this.storyNodeIndex]
+                    const currentLine = this.storyNodes[this.storyNodePath][this.storyNodeIndex - 1]
 
-                    if ((callRegex.test(nextLine) || chatRegex.test(nextLine) || jumpRegex.test(nextLine)) && !this.loading) {
+                    if ((!dialRegex.test(currentLine) && (callRegex.test(nextLine) || chatRegex.test(nextLine) || jumpRegex.test(nextLine))) && !this.loading) {
                         this.advanceStory(env, char)
                     }
 
