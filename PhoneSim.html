@@ -1434,7 +1434,7 @@
                             },
                             { regex: /^!answer$/, func: () => this.callAnswer() },
                             { regex: /^!next$/, func: (m) => this.nextNode() },
-                            { regex: /&(.+?) (.+)$/, func: (m) => this.groupMessage(m[1], m[2]) },
+                            { regex: /^&(.+?) (.+)$/, func: (m) => this.groupMessage(m[1], m[2]) },
                             { regex: /^@ (.+)$/, func: (m) => this.messageNode("mc", m[1]) },
                             { regex: /^!image ([^\s]+) (.+)$/, func: (m) => this.imageMessageNode("", m[1], m[2]) },
                             { regex: /^@image ([^\s]+) (.+)$/, func: (m) => this.imageMessageNode("mc", m[1], m[2]) },
