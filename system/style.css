@@ -40,6 +40,26 @@ body {
     cursor: default;
 }
 
+.devSpace {
+    display: flex;
+    flex-flow: column nowrap;
+    gap: 5px;
+    position: absolute;
+    background-color: rgb(192, 65, 65);
+    color: #FFF;
+    padding: 20px;
+    right: 60%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    border: 1px solid #000;
+    border-radius: 5px;
+    width: 400px;
+}
+
+.devSpace button {
+    padding: 10px;
+}
+
 .phone {
     margin: auto;
     width: 460px;
@@ -1383,6 +1403,7 @@ body {
 .phone .config .new-save-slot span:hover {
     background-color: #27a767a9;
 }
+
 
 @media (max-width: 1560px) {
     .phone {

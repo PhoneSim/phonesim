@@ -22,6 +22,7 @@
 
     <script src="./system/chars.js"></script>
     <script src="./system/story.js"></script>
+    <script src="./system/config.js"></script>
 
     <script>
         // -----------------------------------------------------------------
@@ -1297,6 +1298,12 @@
         const phoneScreen = {
             template: `
                 <div class="phone">
+                    <div v-show="gameConfig.devMode" class="devSpace">
+                        <h1>Developer options</h1>
+                        <p style="fontSize:12px">This area is for developers only.</p>
+                        <button @click="dropSave">Drop Save</button>
+                        <p style="fontSize:12px">Dev, remember to disable developer mode before launching the game.</p>
+                    </div>
                     <div class="screen">
                         <img class="template" src="./system/imgs/template.png">
                         <component 
@@ -1392,7 +1399,8 @@
                     gambOne: false,
                     posts: [],
                     waitAnotherCall: false,
-                    devMessage: false
+                    devMessage: false,
+                    gameConfig: gameConfig
                 }
             },
             mounted() {
@@ -1404,6 +1412,11 @@
                 if (!this.loading) this.saveState()
             },
             methods: {
+                dropSave() {
+                    localStorage.removeItem("PhoneSimSave");
+                    window.alert("Current save removed. \nYou can load an old save (config > saves).")
+                    window.location.reload();
+                },
                 storyNodeReader() {
                     const pathRegex = /^### (.+)$/gm;
                     const nodes = {};
