@@ -1391,7 +1391,8 @@
                     soundSrc: null,
                     gambOne: false,
                     posts: [],
-                    waitAnotherCall: false
+                    waitAnotherCall: false,
+                    devMessage: false
                 }
             },
             mounted() {
@@ -1491,10 +1492,25 @@
                             { regex: /^!endCall$/, func: () => this.endCurrentEventNode() },
                             {
                                 regex: /^!toggleChar (.+)$/, func: (m) => {
-                                    const parts = m[1].split(' - ');
-                                    const active = parts[0].split(' ').map(p => p.trim());
-                                    const disable = parts[1] ? parts[1].split(' ').map(p => p.trim()) : [];
-                                    this.activeOrDisableCharNode(active, disable);
+                                    if (m[1] === "forceDevFinalContent") {
+                                        if (this.currentCharStory !== "dev") this.activeOrDisableCharNode(["dev"], []);
+                                        return
+                                    }
+
+                                    const keys = m[1].split(' ');
+                                    let activeArray = []
+                                    let desableArray = []
+
+                                    keys.forEach(key => {
+                                        if (this.characters.hasOwnProperty(key)) {
+                                            const char = this.characters[key];
+
+                                            if (char.saved) desableArray.push(key)
+                                            else activeArray.push(key)
+                                        }
+                                    })
+
+                                    this.activeOrDisableCharNode(activeArray, desableArray);
                                 }
                             },
                             {
@@ -1636,6 +1652,9 @@
                     }
 
                     if (env === "chat" && !this.loading) { //Notification condition
+                        if (this.currentCharStory === "dev") this.devMessage = true
+                        else this.devMessage = false
+
                         if (!this.gambOne && this.currentEnvStory === oldEnv && this.currentCharStory === oldChar) return;
                         const regex = /^@ /; //MC message
                         const regexTwo = /^\*/ //Dial
@@ -1872,7 +1891,7 @@
                         currentDay: this.currentDay,
                         temperature: this.temperature,
                         randomWeatherIndex: this.randomWeatherIndex,
-                        storyNodeIndexSaved: this.storyNodeIndex,
+                        storyNodeIndexSaved: this.devMessage ? JSON.parse(localStorage.getItem("PhoneSimSave")).storyNodeIndexSaved : this.storyNodeIndex,
                         pathHistory: this.pathHistory,
                         likedPosts: this.likedPosts,
                         changedCharacters: this.changedCharacters,
