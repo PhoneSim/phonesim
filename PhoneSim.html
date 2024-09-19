@@ -9,6 +9,11 @@
     <link rel="stylesheet" href="./system/style.css" />
     <link rel="stylesheet" href="./system/animete.css" />
     <script src="./system/vue.js"></script>
+    <script>
+        window.onload = () => {
+            if (typeof gameConfig !== 'undefined' && gameConfig.name) document.title = gameConfig.name;
+        };
+    </script>
 </head>
 
 <body>
@@ -327,17 +332,17 @@
                 }
             },
             mounted() {
-                this.saves = JSON.parse(localStorage.getItem("PhoneSimSaves")) || []
+                this.saves = JSON.parse(localStorage.getItem(`${gameConfig.name}Saves`)) || []
             },
             methods: {
                 handleFileChange(event) {
                     const file = event.target.files[0];
                     if (file) {
-                        if (file.name.endsWith('.phoneSimSave')) {
+                        if (file.name.endsWith('.phonesimsave')) {
                             const reader = new FileReader();
                             reader.onload = (e) => {
                                 const saveData = e.target.result;
-                                localStorage.setItem('PhoneSimSave', saveData);
+                                localStorage.setItem(`${gameConfig.name}Save`, saveData);
                             };
                             reader.readAsText(file);
                             window.location.reload();
@@ -346,13 +351,13 @@
                     }
                 },
                 exportSave() {
-                    const data = localStorage.getItem('PhoneSimSave');
+                    const data = localStorage.getItem(`${gameConfig.name}Save`);
                     if (data) {
                         const blob = new Blob([data], { type: 'application/octet-stream' });
                         const url = window.URL.createObjectURL(blob);
                         const link = document.createElement('a');
                         link.href = url;
-                        link.download = 'PhoneSimSave.phoneSimSave';
+                        link.download = `${gameConfig.name.toLowerCase()}.phonesimsave`;
                         document.body.appendChild(link);
                         link.click();
                         window.URL.revokeObjectURL(url);
@@ -360,9 +365,9 @@
                     }
                 },
                 save() {
-                    const currentSave = JSON.parse(localStorage.getItem("PhoneSimSave"))
+                    const currentSave = JSON.parse(localStorage.getItem(`${gameConfig.name}Save`))
                     this.saves.push({ ...currentSave, saveName: this.getDate() });
-                    localStorage.setItem("PhoneSimSaves", JSON.stringify(this.saves))
+                    localStorage.setItem(`${gameConfig.name}Saves`, JSON.stringify(this.saves))
 
                     this.highlightNewSave = true;
                     setTimeout(() => {
@@ -377,17 +382,17 @@
                 },
                 deleteSave(index) {
                     this.saves.splice(index, 1)
-                    localStorage.setItem("PhoneSimSaves", JSON.stringify(this.saves))
+                    localStorage.setItem(`${gameConfig.name}Saves`, JSON.stringify(this.saves))
                 },
                 loadSave(index) {
-                    localStorage.setItem("PhoneSimSave", JSON.stringify(this.saves[index]))
+                    localStorage.setItem(`${gameConfig.name}Save`, JSON.stringify(this.saves[index]))
                     window.location.reload()
                 },
                 editSave(index) {
                     this.editingIndex = -1
                     if (this.tempName.length > 0 && this.tempName !== this.originalName) {
                         this.saves[index].saveName = this.tempName
-                        localStorage.setItem("PhoneSimSaves", JSON.stringify(this.saves))
+                        localStorage.setItem(`${gameConfig.name}Saves`, JSON.stringify(this.saves))
                     }
                 },
                 setEditingIndex(index, saveName) {
@@ -520,7 +525,7 @@
                     }
                 },
                 resetProgress() {
-                    localStorage.removeItem("PhoneSimSave")
+                    localStorage.removeItem(`${gameConfig.name}Save`)
                     window.location.reload()
                 }
             },
@@ -1413,7 +1418,7 @@
             },
             methods: {
                 dropSave() {
-                    localStorage.removeItem("PhoneSimSave");
+                    localStorage.removeItem(`${gameConfig.name}Save`);
                     window.alert("Current save removed. \nYou can load an old save (config > saves).")
                     window.location.reload();
                 },
@@ -1872,7 +1877,7 @@
                     }
                 },
                 getState() {
-                    const localSave = JSON.parse(localStorage.getItem("PhoneSimSave"))
+                    const localSave = JSON.parse(localStorage.getItem(`${gameConfig.name}Save`))
                     const saveStructure = {
                         changedCharacters: localSave?.changedCharacters || this.changedCharacters,
                         currentPeriod: localSave?.currentPeriod || this.currentPeriod,
@@ -1904,14 +1909,14 @@
                         currentDay: this.currentDay,
                         temperature: this.temperature,
                         randomWeatherIndex: this.randomWeatherIndex,
-                        storyNodeIndexSaved: this.devMessage ? JSON.parse(localStorage.getItem("PhoneSimSave")).storyNodeIndexSaved : this.storyNodeIndex,
+                        storyNodeIndexSaved: this.devMessage ? JSON.parse(localStorage.getItem(`${gameConfig.name}Save`)).storyNodeIndexSaved : this.storyNodeIndex,
                         pathHistory: this.pathHistory,
                         likedPosts: this.likedPosts,
                         changedCharacters: this.changedCharacters,
                         nextStory: this.nextStory,
                         state: this.state
                     }
-                    localStorage.setItem("PhoneSimSave", JSON.stringify(saveStructure))
+                    localStorage.setItem(`${gameConfig.name}Save`, JSON.stringify(saveStructure))
                 },
                 editCharacter(charKey, newData) {
                     const newInfo = { ...this.characters[charKey], ...newData }
