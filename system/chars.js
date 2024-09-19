@@ -16,7 +16,7 @@ const chars = {
 
     anime: {
         name: "Anime Girl",
-        saved: true,
+        saved: false,
         perfil: "./content/images/b.jpg",
         rel: [["bro", "bro"], ["sis", "sis"]],
         textColor: "rgb(218 119 211)"
@@ -26,7 +26,7 @@ const chars = {
 
     group: {
         name: "Group 1🤓",
-        saved: true,
+        saved: false,
         group: true,
         perfil: "./content/images/c.jpg",
     },
