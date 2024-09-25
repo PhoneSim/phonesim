@@ -25,9 +25,9 @@
         <Phone />
     </div>
 
-    <script src="./system/chars.js"></script>
-    <script src="./system/story.js"></script>
-    <script src="./system/config.js"></script>
+    <script src="./content/characters.js"></script>
+    <script src="./content/story.js"></script>
+    <script src="./content/config.js"></script>
 
     <script>
         // -----------------------------------------------------------------
@@ -1378,7 +1378,7 @@
                     notifications: [],
 
                     //Story
-                    story: story,
+                    story: "",
                     storyNodes: {},
                     storyNodeElement: null,
                     storyNodeIndex: 0,
@@ -1392,7 +1392,7 @@
                     likedPosts: [],
                     nextStory: false,
                     changedCharacters: {},
-                    characters: chars,
+                    characters: {},
                     state: {},
 
                     // Dialogue box
@@ -1413,6 +1413,7 @@
                 }
             },
             mounted() {
+                this.initializeStoryAndCharacters();
                 this.getState()
                 this.storyNodeReader();
                 this.getHistory()
@@ -1421,6 +1422,52 @@
                 if (!this.loading) this.saveState()
             },
             methods: {
+                initializeStoryAndCharacters() {
+                    this.story = this.getStory();
+                    this.characters = this.getCharacters();
+                },
+                getStory() {
+                    return `
+                    ### start
+                    ## dev
+                    ${story}
+                    !toggleChar forceDevFinalContent
+                    ## dev
+                    You've reached the end of this version.
+                    `
+                },
+                getCharacters() {
+                    const characterStrings = characters.trim().split(/\n\s*\n/);
+                    const chars = {};
+
+                    characterStrings.forEach(characterString => {
+                        const regex = /Character: (.+?)\nName: (.+?)\nPerfil: (.+?)\nAvailable: (.+?)\nIs Group: (.+?)\nText Color: (.+?)\nRelationships: (.+?)(?=\n|$)/;
+                        const match = regex.exec(characterString);
+
+                        if (match) {
+                            const key = match[1].trim().replace(/\s+/g, '').toLowerCase();
+
+                            const relationships = match[7].trim() !== "no" ? match[7].trim().split(', ').map(rel => {
+                                const trimmedRel = rel.trim().toLowerCase();
+                                return [trimmedRel, trimmedRel];
+                            }) : null
+
+                            const character = {
+                                name: match[2].trim(),
+                                perfil: `./content/images/${match[3].trim()}`,
+                                saved: match[4].trim() === 'yes',
+                                group: match[5].trim() === 'yes',
+                                textColor: match[6].trim(),
+                                rel: relationships,
+                                dev: key === "dev"
+                            };
+
+                            chars[key] = character;
+                        }
+                    });
+
+                    return chars
+                },
                 dropSave() {
                     localStorage.removeItem(`${gameConfig.name}Save`);
                     window.alert("Current save removed. \nYou can load an old save (config > saves).")
