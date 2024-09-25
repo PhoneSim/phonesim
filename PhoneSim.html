@@ -332,7 +332,7 @@
                 }
             },
             mounted() {
-                this.saves = JSON.parse(localStorage.getItem(`${gameConfig.name}Saves`)).filter(save => save.gameKey === gameConfig.key) || []
+                this.saves = JSON.parse(localStorage.getItem(`${gameConfig.name}Saves`)) || []
             },
             methods: {
                 handleFileChange(event) {
@@ -343,7 +343,7 @@
                             reader.onload = (e) => {
                                 const saveData = e.target.result;
                                 const saveDataParsed = JSON.parse(saveData)
-                                if (saveDataParsed.gameKey === gameConfig.key) {
+                                if (saveDataParsed.gameName === gameConfig.name) {
                                     localStorage.setItem(`${gameConfig.name}Save`, saveData);
                                 }
                                 else window.alert("This save file is for a different game.")
@@ -1882,7 +1882,6 @@
                 },
                 getState() {
                     let localSave = JSON.parse(localStorage.getItem(`${gameConfig.name}Save`));
-                    if (localSave.gameKey !== gameConfig.key) localSave = {};
 
                     const saveStructure = {
                         changedCharacters: localSave?.changedCharacters || this.changedCharacters,
@@ -1921,7 +1920,7 @@
                         changedCharacters: this.changedCharacters,
                         nextStory: this.nextStory,
                         state: this.state,
-                        gameKey: gameConfig.key
+                        gameName: gameConfig.name
                     }
                     localStorage.setItem(`${gameConfig.name}Save`, JSON.stringify(saveStructure))
                 },
