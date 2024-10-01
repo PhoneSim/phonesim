@@ -12,7 +12,10 @@ Is Group: no
 Text Color: red
 Relationships: bro, sis
 
-Note: If the character doesn't need relationships you can put “no” as in the developer's example.
+Note: In the "Relationships" field, the first value represents the relationship **the main character (MC) has towards the current character**, and the second value represents the relationship **the current character has towards the main character (MC)**. 
+If the character has no relationship, you can put "no" as in the developer's example.
+
+Node: Available determines whether the character will be available from the start of the game. If not, it must be inserted into the story with the !toggleChar
 */
 
 
@@ -22,7 +25,7 @@ const characters = `
 
 Character: dev
 Name: Developer
-Perfil: a.jpg
+Perfil: dev.jpg
 Available: yes
 Is Group: no
 Text Color: #FFF
@@ -30,7 +33,7 @@ Relationships: no
 
 Character: mc
 Name: MC
-Perfil: a.jpg
+Perfil: mc.jpg
 Available: no
 Is Group: no
 Text Color: #FFF
@@ -38,13 +41,19 @@ Relationships: no
 
 Character: anime
 Name: Anime Girl
-Perfil: b.jpg
-Available: no
+Perfil: anime.jpg
+Available: yes
 Is Group: no
 Text Color: pink
 Relationships: bro, sis
 
-
+Character: cats
+Name: Cats
+Perfil: cats.jpg
+Available: yes
+Is Group: yes
+Text Color: red
+Relationships: no
 
 
 `

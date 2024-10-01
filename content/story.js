@@ -5,5 +5,14 @@ Instructions:
 */
 
 const story = `
+
+
 Creating my first game with PhoneSim
+
+
+
+
+
+
 `
+
