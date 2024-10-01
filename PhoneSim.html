@@ -1313,7 +1313,7 @@
                         <button @click="dropSave">Drop Save</button>
                         <p style="fontSize:12px">Dev, remember to disable developer mode before launching the game.</p>
                     </div>
-                    <div class="screen">
+                    <div v-show=togglePhone class="screen">
                         <img class="template" src="./system/imgs/template.png">
                         <component 
                             :is="currentApp" 
@@ -1346,7 +1346,6 @@
                             @likePostInsta="likePostInsta"
                             @storyNodeRender="storyNodeRender"
                         />
-                        
                         
                         <Notification v-if="notifications.length"
                             :notification="notifications[0]"
@@ -1409,7 +1408,8 @@
                     posts: [],
                     waitAnotherCall: false,
                     devMessage: false,
-                    gameConfig: gameConfig
+                    gameConfig: gameConfig,
+                    togglePhone: true
                 }
             },
             mounted() {
@@ -1514,6 +1514,8 @@
                             { regex: /^@video ([^\s]+) (.+)$/, func: (m) => this.videoMessageNode("mc", m[1], m[2]) },
                             { regex: /^@video ([^\s]+)$/, func: (m) => this.videoMessageNode("mc", m[1], "") },
                             { regex: /^!video ([^\s]+)$/, func: (m) => this.videoMessageNode("", m[1], "") },
+                            { regex: /^!togglePhone$/, func: () => this.togglePhoneInterface() },
+                            { regex: /^!bg(?:\s+(.+))?$/, func: (m) => this.changeBackgroundImage(m[1] || "") },
                             { regex: /^([^!#*].*)$/, func: (m) => this.messageNode("", m[0]) },
                             {
                                 regex: /^!post ([^\s]+) ([^\s]+) \*\*(.*?)\*\* (.+)$/, func: (m) => {
@@ -1599,6 +1601,18 @@
                                 break;
                             }
                         }
+                    }
+                },
+                changeBackgroundImage(src) {
+                    document.body.style.backgroundImage = `url(${src ? "./content/images/" + src : "../system/imgs/background.jpg"})`;
+                    this.storyNodeIndex = this.storyNodeIndex + 1
+                    this.storyNodeRender()
+                },
+                togglePhoneInterface() {
+                    this.togglePhone = !this.togglePhone
+                    if (!this.togglePhone) {
+                        this.storyNodeIndex = this.storyNodeIndex + 1
+                        this.storyNodeRender()
                     }
                 },
                 getHistory() {
@@ -1869,6 +1883,7 @@
                 advanceStory(env, char) {
                     if (this.storyNodeIndex < this.storyNodes[this.storyNodePath].length) {
                         if (this.loading) this.advanceStoryEng(env, char)
+                        if (!this.togglePhone) this.advanceStoryEng(env, char)
                         else if (!this.nextStory && env === this.currentEnvStory && char === this.currentCharStory) {
                             this.advanceStoryEng(env, char)
                         }
@@ -1925,6 +1940,10 @@
                     if (!this.loading && !this.notifications.includes(notification)) {
                         if (notification.text && regex.test(notification.text)) return
                         this.notifications.push(notification)
+                        if (!this.togglePhone) {
+                            this.storyNodeIndex = this.storyNodeIndex + 1
+                            this.storyNodeRender()
+                        }
                     }
                 },
                 getState() {
