@@ -1515,7 +1515,7 @@
                             { regex: /^@video ([^\s]+)$/, func: (m) => this.videoMessageNode("mc", m[1], "") },
                             { regex: /^!video ([^\s]+)$/, func: (m) => this.videoMessageNode("", m[1], "") },
                             { regex: /^!togglePhone$/, func: () => this.togglePhoneInterface() },
-                            { regex: /^!bg(?:\s+(.+))?$/, func: (m) => this.changeBackgroundImage(m[1] || "") },
+                            { regex: /^!bg(?:\s+(.+))?$/, func: (m) => this.changeBackground(m[1] || "") },
                             { regex: /^([^!#*].*)$/, func: (m) => this.messageNode("", m[0]) },
                             {
                                 regex: /^!post ([^\s]+) ([^\s]+) \*\*(.*?)\*\* (.+)$/, func: (m) => {
@@ -1603,14 +1603,45 @@
                         }
                     }
                 },
-                changeBackgroundImage(src) {
-                    document.body.style.backgroundImage = `url(${src ? "./content/images/" + src : "../system/imgs/background.jpg"})`;
-                    this.storyNodeIndex = this.storyNodeIndex + 1
-                    this.storyNodeRender()
+                changeBackground(src) {
+                    const extension = src.split('.').pop().toLowerCase();
+                    let videoElement = document.getElementById("background-video");
+
+                    if (extension === 'mp4' || extension === 'webm' || extension === 'ogg') {
+
+                        if (!videoElement) {
+                            videoElement = document.createElement("video");
+                            videoElement.id = "background-video";
+                            videoElement.style.position = "fixed";
+                            videoElement.style.objectFit = "cover";
+                            videoElement.style.top = "0";
+                            videoElement.style.left = "0";
+                            videoElement.style.width = "100%";
+                            videoElement.style.height = "100%";
+                            videoElement.style.zIndex = "-1";
+                            videoElement.autoplay = true;
+                            videoElement.loop = true;
+                            document.body.appendChild(videoElement);
+                        }
+
+                        videoElement.src = `./content/${src}`;
+                        videoElement.style.display = "block";
+                    } else {
+                        document.body.style.backgroundImage = `url(${src ? "./content/" + src : "../system/imgs/background.jpg"})`;
+
+                        if (videoElement) {
+                            videoElement.remove();
+                        }
+                    }
+
+                    if (!this.loading) {
+                        this.storyNodeIndex = this.storyNodeIndex + 1;
+                        this.storyNodeRender();
+                    }
                 },
                 togglePhoneInterface() {
                     this.togglePhone = !this.togglePhone
-                    if (!this.togglePhone) {
+                    if (!this.loading && !this.togglePhone) {
                         this.storyNodeIndex = this.storyNodeIndex + 1
                         this.storyNodeRender()
                     }
@@ -1882,8 +1913,10 @@
                 },
                 advanceStory(env, char) {
                     if (this.storyNodeIndex < this.storyNodes[this.storyNodePath].length) {
+                        // if (!this.loading && !this.togglePhone) {
+                        //     this.advanceStoryEng(env, char)
+                        // }
                         if (this.loading) this.advanceStoryEng(env, char)
-                        if (!this.togglePhone) this.advanceStoryEng(env, char)
                         else if (!this.nextStory && env === this.currentEnvStory && char === this.currentCharStory) {
                             this.advanceStoryEng(env, char)
                         }
@@ -1940,7 +1973,7 @@
                     if (!this.loading && !this.notifications.includes(notification)) {
                         if (notification.text && regex.test(notification.text)) return
                         this.notifications.push(notification)
-                        if (!this.togglePhone) {
+                        if (!this.togglePhone && !this.loading) {
                             this.storyNodeIndex = this.storyNodeIndex + 1
                             this.storyNodeRender()
                         }
