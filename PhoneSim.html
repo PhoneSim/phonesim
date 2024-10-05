@@ -166,7 +166,7 @@
                     <span :style="'color:' + color" class="person" v-show="prefix">{{prefix}}</span>
                     <img @click="expandClosePhoto" v-if="type === 'image' && src" :src="src">
                     <video v-if="type === 'video' && src" :src="src" controls></video>
-                    <div>{{text}}</div>
+                    <div v-html=text></div>
                 </div>
                 <audio ref="audio" :src="dest === 's' ? './system/audios/send_text.mp3' : './system/audios/receive_text.mp3'" type="audio/mpeg" id="msg-sound"></audio>
             `,
@@ -1627,7 +1627,7 @@
                         videoElement.src = `./content/${src}`;
                         videoElement.style.display = "block";
                     } else {
-                        document.body.style.backgroundImage = `url(${src ? "./content/" + src : "../system/imgs/background.jpg"})`;
+                        document.body.style.backgroundImage = `url(${src ? "./content/" + src : "./system/imgs/background.jpg"})`;
 
                         if (videoElement) {
                             videoElement.remove();
