@@ -484,7 +484,9 @@
                 "storyNodes",
                 "storyNodePath",
                 "storyNodeIndex",
-                "waitAnotherCall"
+                "waitAnotherCall",
+                "cloneMode",
+                "showApps"
             ],
             emits: [
                 "goBack",
@@ -495,7 +497,8 @@
                 "advanceStory",
                 "likePostInsta",
                 "storyNodeRender",
-                "setWaitAnotherCall"
+                "setWaitAnotherCall",
+                "setCloneMode"
             ],
             data() {
                 return {
@@ -606,7 +609,9 @@
                 "storyNodes",
                 "storyNodePath",
                 "storyNodeIndex",
-                "waitAnotherCall"
+                "waitAnotherCall",
+                "cloneMode",
+                "showApps"
             ],
             emits: [
                 "navigateTo",
@@ -618,7 +623,8 @@
                 "likePostInsta",
                 "storyNodeRender",
                 "storyNodeElement",
-                "setWaitAnotherCall"
+                "setWaitAnotherCall",
+                "setCloneMode"
             ],
             methods: {
                 navigateTo(app) {
@@ -694,7 +700,9 @@
                 "storyNodes",
                 "storyNodePath",
                 "storyNodeIndex",
-                "waitAnotherCall"
+                "waitAnotherCall",
+                "cloneMode",
+                "showApps"
             ],
             emits: [
                 "navigateTo",
@@ -705,7 +713,8 @@
                 "editCharacter",
                 "storyNodeRender",
                 "likedPosts",
-                "setWaitAnotherCall"
+                "setWaitAnotherCall",
+                "setCloneMode"
             ],
             methods: {
                 edit() {
@@ -781,7 +790,9 @@
                 "storyNodes",
                 "storyNodePath",
                 "storyNodeIndex",
-                "waitAnotherCall"
+                "waitAnotherCall",
+                "cloneMode",
+                "showApps"
             ],
             emits: [
                 "goBack",
@@ -791,7 +802,8 @@
                 "advanceStory",
                 "editCharacter",
                 "storyNodeRender",
-                "setWaitAnotherCall"
+                "setWaitAnotherCall",
+                "setCloneMode"
             ],
             created() {
                 document.addEventListener('keydown', this.handleKeyDown)
@@ -884,7 +896,7 @@
                         </div>
                         
                         <template v-for="char in characters" :key="char?.name">
-                            <div v-if="!char?.dev && char?.saved && !char.group" @click="navigateTo('PhoneCall', char)" class="btn person">
+                            <div v-if="!char?.dev && char?.saved && !char.group && !char.clone" @click="navigateTo('PhoneCall', char)" class="btn person">
                                 <img :src="char.perfil">
                                 <p>{{char?.name}}</p>
                                 <img @click="(e) => editChar(e, char.name)" class="btn" src="./system/icons/others/editChar.png">
@@ -915,7 +927,9 @@
                 "storyNodes",
                 "storyNodePath",
                 "storyNodeIndex",
-                "waitAnotherCall"
+                "waitAnotherCall",
+                "cloneMode",
+                "showApps"
             ],
             emits: [
                 "navigateTo",
@@ -926,7 +940,8 @@
                 "editCharacter",
                 "likePostInsta",
                 "storyNodeRender",
-                "setWaitAnotherCall"
+                "setWaitAnotherCall",
+                "setCloneMode"
             ],
             methods: {
                 editChar(event, charName) {
@@ -1014,7 +1029,9 @@
                 "storyNodes",
                 "storyNodePath",
                 "storyNodeIndex",
-                "waitAnotherCall"
+                "waitAnotherCall",
+                "cloneMode",
+                "showApps"
             ],
             emits: [
                 "navigateTo",
@@ -1025,7 +1042,8 @@
                 "setShowAlarm",
                 "likePostInsta",
                 "storyNodeRender",
-                "setWaitAnotherCall"
+                "setWaitAnotherCall",
+                "setCloneMode"
             ],
             data() {
                 return {
@@ -1100,7 +1118,7 @@
 
                     <div class="btn-container chat-list">
                         <template v-for="char in characters" :key="char.name">
-                            <div v-if="char.saved" class="btn item" @click="navigateTo('WhatsChat', char)">
+                            <div v-if="char.saved && (cloneMode ? char?.clone === true : char?.clone === false)" class="btn item" @click="navigateTo('WhatsChat', char)">
                                 <img class="avatar" :src="char.perfil">
                                 <div class="info">
                                     <span>{{char.name}}</span>
@@ -1135,11 +1153,13 @@
                 "storyNodes",
                 "storyNodePath",
                 "storyNodeIndex",
-                "waitAnotherCall"
+                "waitAnotherCall",
+                "cloneMode",
+                "showApps"
             ],
             data() {
                 return {
-                    endVersion: false
+                    endVersion: false,
                 }
             },
             mounted() {
@@ -1154,7 +1174,8 @@
                 "setShowAlarm",
                 "likePostInsta",
                 "storyNodeRender",
-                "setWaitAnotherCall"
+                "setWaitAnotherCall",
+                "setCloneMode"
             ],
             methods: {
                 navigateTo(app, props) {
@@ -1200,7 +1221,7 @@
                             </div>  
                         </div>
                     </div>                   
-                    <div v-for="app in apps" :key="app.icon" class="btn" @click="action(app?.action)">
+                    <div v-for="app in apps.filter(e=> e?.show)" :key="app.icon" class="btn" @click="action(app?.action)">
                         <img :src="'./system/icons/apps/' + app.icon">
                     </div>
                 </div>
@@ -1233,12 +1254,13 @@
                         './system/icons/others/thunderstorm.png',
                     ],
                     apps: [
-                        { icon: "alarm.png", action: "advance" },
-                        { icon: "store.png", action: "" },
-                        { icon: "tiktok.png", action: "" },
-                        { icon: "whatsapp.png", action: "Whats" },
-                        { icon: "note.png", action: "" },
-                        { icon: "insta.png", action: "Insta" }
+                        { icon: "alarm.png", action: "advance", show: true },
+                        { icon: "store.png", action: "", show: true },
+                        { icon: "tiktok.png", action: "", show: true },
+                        { icon: "whatsapp.png", action: "Whats", show: true },
+                        { icon: "note.png", action: "", show: true },
+                        { icon: "insta.png", action: "Insta", show: true },
+                        { icon: "cloneApp.png", action: "Clone", show: this.showApps["clone"] },
                     ],
                     toolapps: [
                         { icon: "phone.png", action: "PhoneApp" },
@@ -1268,7 +1290,9 @@
                 "storyNodes",
                 "storyNodePath",
                 "storyNodeIndex",
-                "waitAnotherCall"
+                "waitAnotherCall",
+                "cloneMode",
+                "showApps"
             ],
             emits: [
                 "goBack",
@@ -1279,17 +1303,26 @@
                 "advanceStory",
                 "likePostInsta",
                 "storyNodeRender",
-                "setWaitAnotherCall"
+                "setWaitAnotherCall",
+                "setCloneMode"
             ],
             methods: {
                 action(action) {
                     if (action) {
                         if (action === "advance") this.$emit("setShowAlarm")
-                        else this.$emit("navigateTo", action)
+                        else this.navigateTo(action)
                     }
                 },
                 navigateTo(app) {
-                    this.$emit("navigateTo", app)
+                    if (app === "Clone") {
+                        this.$emit("setCloneMode", true)
+                        this.$emit("navigateTo", "Whats")
+                    }
+                    else if (app === "Whats") {
+                        this.$emit("setCloneMode", false)
+                        this.$emit("navigateTo", app)
+                    }
+                    else this.$emit("navigateTo", app)
                 },
                 goBack() {
                     this.$emit("goBack");
@@ -1336,6 +1369,8 @@
                             :storyNodes="storyNodes" 
                             :storyNodePath="storyNodePath"
                             :waitAnotherCall="waitAnotherCall"
+                            :cloneMode = "cloneMode"
+                            :showApps="showApps"
                             @setWaitAnotherCall="setWaitAnotherCall"
                             @advanceStory="advanceStory" 
                             @setDialogueBox="setDialogueBox" 
@@ -1345,6 +1380,7 @@
                             @editCharacter="editCharacter"
                             @likePostInsta="likePostInsta"
                             @storyNodeRender="storyNodeRender"
+                            @setCloneMode = "setCloneMode"
                         />
                         
                         <Notification v-if="notifications.length"
@@ -1409,7 +1445,11 @@
                     waitAnotherCall: false,
                     devMessage: false,
                     gameConfig: gameConfig,
-                    togglePhone: true
+                    togglePhone: true,
+                    cloneMode: false,
+                    showApps: {
+                        clone: false
+                    }
                 }
             },
             mounted() {
@@ -1422,6 +1462,13 @@
                 if (!this.loading) this.saveState()
             },
             methods: {
+                addOrRemoveApp(app) {
+                    this.showApps[app] = !this.showApps[app]
+                    if (!this.loading) {
+                        this.storyNodeIndex = this.storyNodeIndex + 1;
+                        this.storyNodeRender();
+                    }
+                },
                 initializeStoryAndCharacters() {
                     this.story = this.getStory();
                     this.characters = this.getCharacters();
@@ -1441,23 +1488,24 @@
                     const chars = {};
 
                     characterStrings.forEach(characterString => {
-                        const regex = /Character: (.+?)\nName: (.+?)\nPerfil: (.+?)\nAvailable: (.+?)\nIs Group: (.+?)\nText Color: (.+?)\nRelationships: (.+?)(?=\n|$)/;
+                        const regex = /Character: (.+?)\nName: (.+?)\nPerfil: (.+?)\nAvailable: (.+?)\nIs Group: (.+?)\n(?:Clone App: (.+?)\n)?Text Color: (.+?)\nRelationships: (.+?)(?=\n|$)/;
                         const match = regex.exec(characterString);
 
                         if (match) {
                             const key = match[1].trim().replace(/\s+/g, '').toLowerCase();
 
-                            const relationships = match[7].trim() !== "no" ? match[7].trim().split(', ').map(rel => {
+                            const relationships = match[8].trim() !== "no" ? match[8].trim().split(', ').map(rel => {
                                 const trimmedRel = rel.trim().toLowerCase();
                                 return [trimmedRel, trimmedRel];
-                            }) : null
+                            }) : null;
 
                             const character = {
                                 name: match[2].trim(),
                                 perfil: `./content/images/${match[3].trim()}`,
                                 saved: match[4].trim() === 'yes',
                                 group: match[5].trim() === 'yes',
-                                textColor: match[6].trim(),
+                                clone: match[6] ? match[6].trim() === 'yes' : false,
+                                textColor: match[7].trim(),
                                 rel: relationships,
                                 dev: key === "dev"
                             };
@@ -1466,7 +1514,7 @@
                         }
                     });
 
-                    return chars
+                    return chars;
                 },
                 dropSave() {
                     localStorage.removeItem(`${gameConfig.name}Save`);
@@ -1516,6 +1564,7 @@
                             { regex: /^!video ([^\s]+)$/, func: (m) => this.videoMessageNode("", m[1], "") },
                             { regex: /^!togglePhone$/, func: () => this.togglePhoneInterface() },
                             { regex: /^!bg(?:\s+(.+))?$/, func: (m) => this.changeBackground(m[1] || "") },
+                            { regex: /^!cloneApp$/, func: () => this.addOrRemoveApp("clone") },
                             { regex: /^([^!#*].*)$/, func: (m) => this.messageNode("", m[0]) },
                             {
                                 regex: /^!post ([^\s]+) ([^\s]+) \*\*(.*?)\*\* (.+)$/, func: (m) => {
@@ -1992,7 +2041,8 @@
                         pathHistory: localSave?.pathHistory || this.pathHistory,
                         likedPosts: localSave?.likedPosts || this.likedPosts,
                         nextStory: localSave?.nextStory || this.nextStory,
-                        state: localSave?.state || this.state
+                        state: localSave?.state || this.state,
+                        cloneMode: localSave?.cloneMode || this.cloneMode
                     }
 
                     this.changedCharacters = saveStructure.changedCharacters
@@ -2006,6 +2056,7 @@
                     this.characters = { ...this.characters, ...saveStructure.changedCharacters }
                     this.nextStory = saveStructure.nextStory
                     this.state = saveStructure.state
+                    this.cloneMode = saveStructure.cloneMode
                 },
                 saveState() {
                     const saveStructure = {
@@ -2019,7 +2070,8 @@
                         changedCharacters: this.changedCharacters,
                         nextStory: this.nextStory,
                         state: this.state,
-                        gameName: gameConfig.name
+                        gameName: gameConfig.name,
+                        cloneMode: this.cloneMode
                     }
                     localStorage.setItem(`${gameConfig.name}Save`, JSON.stringify(saveStructure))
                 },
@@ -2030,7 +2082,10 @@
                 },
                 setWaitAnotherCall(value) {
                     this.waitAnotherCall = value
-                }
+                },
+                setCloneMode(value) {
+                    this.cloneMode = value
+                },
             },
             components: {
                 "Home": home,

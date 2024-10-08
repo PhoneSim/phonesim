@@ -9,6 +9,7 @@ Name: Marcus
 Perfil: b.jpg
 Available: yes
 Is Group: no
+Clone App: no
 Text Color: red
 Relationships: bro, sis
 
@@ -39,11 +40,29 @@ Is Group: no
 Text Color: #FFF
 Relationships: no
 
+Character: pedro
+Name: Pedro
+Perfil: cats.jpg
+Available: yes
+Is Group: no
+Text Color: pink
+Relationships: no
+
 Character: anime
 Name: Anime Girl
 Perfil: anime.jpg
 Available: yes
 Is Group: no
+Clone App: no
+Text Color: pink
+Relationships: bro, sis
+
+Character: animeclone
+Name: Anime Girl Clone App
+Perfil: anime.jpg
+Available: yes
+Is Group: no
+Clone App: yes
 Text Color: pink
 Relationships: bro, sis
 
