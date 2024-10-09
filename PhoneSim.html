@@ -122,7 +122,7 @@
             <audio src="./system/audios/notification.mp3" id="notification-sound" autoplay></audio>
             `,
             props: ["notification"],
-            emits: ["notificationsShift", "navigateTo"],
+            emits: ["notificationsShift", "navigateTo", "setCloneMode"],
             computed: {
                 notifyType() {
                     return this.notification?.type
@@ -132,6 +132,7 @@
                 navigate() {
                     if (this.notifyType === "i") this.$emit("navigateTo", "Insta")
                     else {
+                        this.$emit("setCloneMode", false)
                         this.$emit("navigateTo", "Whats")
                         this.$emit("navigateTo", "WhatsChat", this.notification.char)
                     }
@@ -1108,7 +1109,7 @@
             template: `
                 <div class="whats">
                     <div class="nav">
-                        <div class="logo"><img src="./system/icons/others/logo-whats.png"></div>
+                        <div class="logo"><img :src="'./system/icons/others/' + (cloneMode ? 'logo-cloneApp.png' : 'logo-whats.png')"></div>
                         <div class="nav-container">
                             <div class="btn"><img src="./system/icons/others/camera-whats.png"></div>
                             <div class="btn"><img src="./system/icons/others/lupa-whats.png"></div>
@@ -1387,6 +1388,7 @@
                             :notification="notifications[0]"
                             @notificationsShift="notificationsShift"
                             @navigateTo="navigateTo"
+                            @setCloneMode = "setCloneMode"
                         />
                     </div>
 
@@ -1452,9 +1454,11 @@
                     }
                 }
             },
+            created() {
+                this.getState()
+            },
             mounted() {
                 this.initializeStoryAndCharacters();
-                this.getState()
                 this.storyNodeReader();
                 this.getHistory()
             },
@@ -1463,8 +1467,8 @@
             },
             methods: {
                 addOrRemoveApp(app) {
-                    this.showApps[app] = !this.showApps[app]
                     if (!this.loading) {
+                        this.showApps[app] = !this.showApps[app]
                         this.storyNodeIndex = this.storyNodeIndex + 1;
                         this.storyNodeRender();
                     }
@@ -1823,8 +1827,9 @@
                         const regexTwo = /^\*/ //Dial
                         const groupMessageRegex = /&(.+?) (.+)$/
                         this.gambOne = false
+                        const currentCharObj = this.characters[this.currentCharStory]
 
-                        if (!regex.test(nextLine) && !regexTwo.test(nextLine)) {
+                        if (!regex.test(nextLine) && !regexTwo.test(nextLine) && !currentCharObj.clone) {
                             const match = nextLine.match(groupMessageRegex)
                             const prefix = match && match[1] || ""
                             const text = prefix ? match[2] : nextLine
@@ -2042,7 +2047,8 @@
                         likedPosts: localSave?.likedPosts || this.likedPosts,
                         nextStory: localSave?.nextStory || this.nextStory,
                         state: localSave?.state || this.state,
-                        cloneMode: localSave?.cloneMode || this.cloneMode
+                        cloneMode: localSave?.cloneMode || this.cloneMode,
+                        showApps: localSave?.showApps || this.showApps
                     }
 
                     this.changedCharacters = saveStructure.changedCharacters
@@ -2057,6 +2063,7 @@
                     this.nextStory = saveStructure.nextStory
                     this.state = saveStructure.state
                     this.cloneMode = saveStructure.cloneMode
+                    this.showApps = saveStructure.showApps
                 },
                 saveState() {
                     const saveStructure = {
@@ -2071,7 +2078,8 @@
                         nextStory: this.nextStory,
                         state: this.state,
                         gameName: gameConfig.name,
-                        cloneMode: this.cloneMode
+                        cloneMode: this.cloneMode,
+                        showApps: this.showApps
                     }
                     localStorage.setItem(`${gameConfig.name}Save`, JSON.stringify(saveStructure))
                 },
