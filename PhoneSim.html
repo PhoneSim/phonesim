@@ -320,7 +320,7 @@
 
                 <p class="dev-notification">The game features an automatic saving system and will always resume from where you left off</p>
                 <p class="dev-notification">Tip: You can change the save name when creating a new one or by clicking on an existing one</p>
-                <p class="dev-notification">In future you will be able to save at any time using the "tab" button</p>
+                <p class="dev-notification">You can save at any time using "Shift" button</p>
             </div>
             `,
             data() {
@@ -1461,11 +1461,31 @@
                 this.initializeStoryAndCharacters();
                 this.storyNodeReader();
                 this.getHistory()
+                document.addEventListener('keydown', this.quickSave)
             },
             updated() {
                 if (!this.loading) this.saveState()
             },
+            beforeUnmount() {
+                document.removeEventListener('keydown', this.quickSave);
+            },
             methods: {
+                quickSave(event) {
+                    if (event.key === 'Shift') {
+                        const currentDateTime = new Date();
+                        const day = currentDateTime.getDate();
+                        const month = currentDateTime.getMonth() + 1;
+                        const year = currentDateTime.getFullYear();
+                        const hour = currentDateTime.getHours();
+                        const minute = currentDateTime.getMinutes();
+                        const saveName = 'Quick Save ' + (month < 10 ? '0' : '') + month + '/' + (day < 10 ? '0' : '') + day + '/' + year + ' ' + (hour < 10 ? '0' : '') + hour + ':' + (minute < 10 ? '0' : '') + minute;
+                        let saves = JSON.parse(localStorage.getItem(`${gameConfig.name}Saves`)) || [];
+                        const currentSave = JSON.parse(localStorage.getItem(`${gameConfig.name}Save`))
+                        saves.push({ ...currentSave, saveName });
+                        localStorage.setItem(`${gameConfig.name}Saves`, JSON.stringify(saves))
+                        alert("Game Saved")
+                    }
+                },
                 addOrRemoveApp(app) {
                     if (!this.loading) {
                         this.showApps[app] = !this.showApps[app]
