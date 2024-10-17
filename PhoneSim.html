@@ -2119,7 +2119,7 @@
                     this.state = saveStructure.state
                     this.cloneMode = saveStructure.cloneMode
                     this.showApps = saveStructure.showApps
-                    this.togglePhone = saveStructure.togglePhone
+                    this.togglePhone = localSave?.hasOwnProperty('togglePhone') ? localSave.togglePhone : this.togglePhone
                 },
                 saveState() {
                     const saveStructure = {
