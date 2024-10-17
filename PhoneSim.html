@@ -695,6 +695,10 @@
                 if (this.char?.rel) {
                     this.rel = [this.char?.rel[0][1], this.char?.rel[1][1]]
                 }
+                this.disableQuickSave()
+            },
+            beforeUnmount() {
+                this.disableQuickSave()
             },
             props: [
                 "appProps",
@@ -732,6 +736,9 @@
                 "setAllowQuickSave"
             ],
             methods: {
+                disableQuickSave() {
+                    this.$emit("setAllowQuickSave")
+                },
                 edit() {
                     if (this.name.length) {
                         if (this.rel.length) {
